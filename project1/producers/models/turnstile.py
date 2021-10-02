@@ -27,7 +27,7 @@ class Turnstile(Producer):
             .replace("'", "")
         )
 
-        topic_name = f"turnstiles.{station_name}"
+        topic_name = f"org.turnstiles.v1"
         super().__init__(
             topic_name,
             key_schema=Turnstile.key_schema,
