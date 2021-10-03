@@ -48,7 +48,7 @@ def run_server():
         exit(1)
     if topic_check.topic_exists("org.chicago.cta.stations.table.v1") is False:
         logger.fatal(
-            "Ensure that Faust Streaming is running successfully before running the web server!"
+            "(2)Ensure that Faust Streaming is running successfully before running the web server!"
         )
         exit(1)
 
@@ -74,7 +74,7 @@ def run_server():
             is_avro=False,
         ),
         KafkaConsumer(
-            "^org.chicago.cta.station.arrivals.",
+            "org.chicago.cta.station.arrivals.v1",
             lines.process_message,
             offset_earliest=True,
         ),

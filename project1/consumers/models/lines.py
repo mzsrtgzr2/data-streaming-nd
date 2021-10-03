@@ -23,6 +23,7 @@ class Lines:
             value = message.value()
             if message.topic() == "org.chicago.cta.stations.table.v1":
                 value = json.loads(value)
+                
             if value["line"] == "green":
                 self.green_line.process_message(message)
             elif value["line"] == "red":
