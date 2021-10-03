@@ -29,11 +29,11 @@ class TransformedStation(faust.Record, validation=True):
 
 
 app = faust.App("stations-stream-7", broker="kafka://localhost:9092", store="memory://")
-topic = app.topic("org.stations", value_type=Station)
-out_topic = app.topic("org.stations.table.updates", partitions=1)
+topic = app.topic("org.chicago.cta.stations", value_type=Station)
+out_topic = app.topic("org.chicago.cta.stations.table.changes.v1", partitions=1)
 
 table = app.Table(
-   'org.stations.table.v1',
+   'org.chicago.cta.stations.table.v1',
    default=TransformedStation,
    partitions=1,
    changelog_topic=out_topic,

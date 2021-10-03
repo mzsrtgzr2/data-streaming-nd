@@ -30,33 +30,34 @@ class KafkaConsumer:
         self.consume_timeout = consume_timeout
         self.offset_earliest = offset_earliest
 
-        #
-        #
-        # TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
-        #
-        #
+
         self.broker_properties = {
-                #
-                # TODO
-                #
+            'bootstrap.servers': 'PLAINTEXT://0.0.0.0:9092'
         }
 
-        # TODO: Create the Consumer, using the appropriate type.
-        if is_avro is True:
-            self.broker_properties["schema.registry.url"] = "http://localhost:8089"
-            #self.consumer = AvroConsumer(...)
-        else:
-            #self.consumer = Consumer(...)
-            pass
+        group_name = 'group1'
 
-        #
-        #
-        # TODO: Configure the AvroConsumer and subscribe to the topics. Make sure to think about
-        # how the `on_assign` callback should be invoked.
-        #
-        #
-        # self.consumer.subscribe( TODO )
+        if is_avro is True:
+            self.broker_properties["schema.registry.url"] = "http://localhost:7070"
+            self.consumer = AvroConsumer(
+                self.broker_properties,
+                group_id=group_name,
+                request_timeout_ms=self.consume_timeout*1000,
+                auto_offset_reset='earliest' if self.offset_earliest else 'latest'
+            )
+        else:
+            self.consumer = Consumer(
+                self.broker_properties,
+                group_id=group_name,
+                request_timeout_ms=self.consume_timeout*1000,
+                auto_offset_reset='earliest' if self.offset_earliest else 'latest'
+            )
+
+        self.consumer.subscribe(
+            topics=[],
+            pattern=self.topic_name_pattern,
+            # listener=self.on_assign
+        )
 
     def on_assign(self, consumer, partitions):
         """Callback for when topic assignment takes place"""
@@ -84,21 +85,20 @@ class KafkaConsumer:
 
     def _consume(self):
         """Polls for a message. Returns 1 if a message was received, 0 otherwise"""
-        #
-        #
-        # TODO: Poll Kafka for messages. Make sure to handle any errors or exceptions.
-        # Additionally, make sure you return 1 when a message is processed, and 0 when no message
-        # is retrieved.
-        #
-        #
-        logger.info("_consume is incomplete - skipping")
-        return 0
+        try:
+            msg = self.consumer.poll(self.consume_timeout)
+        except SerializerError as e:
+            logger.error("Message failed %s", e)
+            return 0
 
+        if msg is None:
+            return 0
+        if msg.error():
+            logger.error("Consumer error: %s", msg.error())
+            return 0
+
+        self.message_handler(msg)   
 
     def close(self):
         """Cleans up any open kafka consumers"""
-        #
-        #
-        # TODO: Cleanup the kafka consumer
-        #
-        #
+        self.consumer.close()
