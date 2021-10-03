@@ -17,5 +17,5 @@ class Weather:
         """Handles incoming weather data"""
         message_value = message.value()
         logger.info("weather process_message %s", message_value)
-        self.temperature = message_value.temperature
-        self.status = message_value.status
+        self.temperature = message_value['temperature']
+        self.status = message_value['status']

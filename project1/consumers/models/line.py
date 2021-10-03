@@ -66,7 +66,7 @@ class Line:
                 logger.fatal("bad station? %s, %s", message_value, e)
 
         elif message_topic.startswith("org.chicago.cta.station.arrivals."):
-            self._handle_arrival(message_value)
+            self._handle_arrival(message)
 
         elif message_topic == 'TURNSTILE_SUMMARY':
             logger.debug("turnstile message: %s", message_value)
