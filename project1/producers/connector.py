@@ -40,7 +40,7 @@ def configure_connector():
                "mode": "incrementing",
                "incrementing.column.name": "station_id",
                "topic.prefix": "org.chicago.cta.",
-               "poll.interval.ms": "1000",
+               "poll.interval.ms": "120000",
            }
        }),
     )
