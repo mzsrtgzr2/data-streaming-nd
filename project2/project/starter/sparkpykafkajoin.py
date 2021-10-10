@@ -80,13 +80,15 @@ customerRiskStreamingDF = spark.sql('select customer, score from CustomerRisk')
 df_joined = emailAndBirthYearStreamingDF.join(
   customerRiskStreamingDF, 
   expr('customer=email')
-  ).selectExpr("customer", "score", "email", "birthYear")
+  ).selectExpr("cast(email as string) as key", "TO_JSON(struct(*)) AS value")
  
-write_stream_to_console(df_joined)
 df_joined\
   .writeStream\
+  .outputMode('append')\
   .format("kafka")\
-  .option("kafka.bootstrap.servers", "kafka:19092")\
+  .option("kafka.bootstrap.servers", "localhost:9092")\
   .option("topic", "risk-topic")\
-  .option("checkpointLocation", "/tmp/kafka-checkpoint-100") \
+  .option("checkpointLocation", "/tmp/kafka-checkpoint-0") \
   .option("failOnDataLoss", "false").start().awaitTermination()
+
+write_stream_to_console(df_joined)
