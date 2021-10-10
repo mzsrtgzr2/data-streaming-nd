@@ -15,6 +15,15 @@ services:
     image: redis:6.0.6
     ports:
       - "6379:6379"
+  
+  redisui:
+    image: marian/rebrow
+    ports:
+      - "5001:5001"
+    links:
+      - redis:redis
+    depends_on:
+      - "redis"
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.1
@@ -36,6 +45,28 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
     depends_on:
       - "zookeeper"
+
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest:5.2.2
+    ports:
+    - "8082:8082"
+    environment:
+      KAFKA_REST_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:19092"
+      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082/"
+      KAFKA_REST_HOST_NAME: "rest-proxy"
+    depends_on:
+    - "kafka"
+  
+  topics-ui:
+    image: landoop/kafka-topics-ui:0.9.4
+    ports:
+    - "8085:8085"
+    environment:
+      PORT: "8085"
+      PROXY: "true"
+      KAFKA_REST_PROXY_URL: "http://rest-proxy:8082"
+    depends_on:
+    - "rest-proxy"
 
   banking-simulation:
     image: gcr.io/simulation-images/banking-simulation
@@ -71,7 +102,7 @@ services:
       KAFKA_RISK_TOPIC: your-topic-here
     depends_on:
       - "kafka"
-      - "redis"      
+      - "redis"
 
   connect:
     image: gcr.io/simulation-images/kafka-connect-redis-source
@@ -101,17 +132,16 @@ services:
     - "kafka"
     - "redis"
 
-  zeppelin:
-    image: apache/zeppelin:0.8.0
+  jupyter:
+    image: jupyter/pyspark-notebook
     ports:
-      - "9090:8080"
+      - "8888:8888"
     volumes:
-      - ./spark:/zeppelin/spark
-      - ./notebooks:/zeppelin/notebook
+      - ./notebooks:/home/jovyan/work
     environment:
-      - "MASTER=spark://spark:8080"
-      - "SPARK_MASTER=spark://spark:8080"
-      - "SPARK_HOME=/zeppelin/spark"
+      - JUPYTER_ENABLE_LAB=yes
+      - LabApp.token=''
+
   
   spark:
     image: docker.io/bitnami/spark:3-debian-10
@@ -140,7 +170,9 @@ services:
       - SPARK_SSL_ENABLED=no
     volumes:
       - ./:/home/workspace/
-      - ./spark/jars:/opt/bitnami/spark/.ivy2           
+      - ./spark/jars:/opt/bitnami/spark/.ivy2  
+      
+      
 
 
  
