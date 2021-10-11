@@ -86,9 +86,9 @@ df_joined\
   .writeStream\
   .outputMode('append')\
   .format("kafka")\
-  .option("kafka.bootstrap.servers", "localhost:9092")\
+  .option("kafka.bootstrap.servers", "kafka:19092")\
   .option("topic", "risk-topic")\
   .option("checkpointLocation", "/tmp/kafka-checkpoint-0") \
   .option("failOnDataLoss", "false").start().awaitTermination()
 
-write_stream_to_console(df_joined)
+# write_stream_to_console(df_joined)
